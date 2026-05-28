@@ -505,7 +505,7 @@ Helios / AI Prototyping | needs further discussion</textarea>
       risks: $('f-risks').value || '0',
       wins: $('f-wins').value || '',
       sprintlink: $('f-sprintlink').value || '',
-      risks: window._risksData.slice(),
+      riskList: window._risksData.slice(),
       risklog: $('f-risklog').value || '',
       proposals: $('f-proposals').value || '',
       openitems: $('f-openitems').value || '',
@@ -600,7 +600,7 @@ Helios / AI Prototyping | needs further discussion</textarea>
         '</td>' +
         '<td width="50%" valign="top" style="padding:20px 28px 20px 14px;">' +
           '<div style="font-size:14px;font-weight:bold;color:#993c1d;padding-bottom:10px;">Risks &amp; blockers</div>' +
-          riskItemsHtml(v.risks) +
+          riskItemsHtml(v.riskList) +
           riskLinkHtml +
         '</td>' +
       '</tr></table>' +
