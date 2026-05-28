@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive Summary Email Generator — Insight</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #f4f4f1;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Calibri, Arial, sans-serif;
+    color: #222;
+    line-height: 1.5;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0 0 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .section {
+    background: #fff;
+    border: 1px solid #e0ddd4;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .row:last-child { margin-bottom: 0; }
+  .row label { font-size: 13px; color: #555; }
+  input[type="text"], select, textarea {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    border: 1px solid #d4d2c9;
+    border-radius: 6px;
+    background: #fff;
+    color: #222;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #D40E8C;
+    box-shadow: 0 0 0 2px rgba(212, 14, 140, 0.15);
+  }
+  textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .grid-3 .field label {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .button-row {
+    display: flex;
+    gap: 10px;
+    margin: 18px 0;
+    position: relative;
+    flex-wrap: wrap;
+  }
+  button {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    border: 1px solid #d4d2c9;
+    border-radius: 6px;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button:hover:not(:disabled) { background: #f6f5f0; }
+  button:active:not(:disabled) { transform: scale(0.98); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary {
+    background: #D40E8C;
+    color: #fff;
+    border-color: #D40E8C;
+  }
+  button.primary:hover:not(:disabled) { background: #B01C87; }
+  .toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: #0f6e56;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .output {
+    margin-top: 20px;
+    display: none;
+  }
+  .output.show { display: block; }
+  .output-label {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  .output-label strong { color: #222; font-weight: 600; }
+  .preview-frame {
+    border: 1px solid #e0ddd4;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f4f4f1;
+  }
+  .hint {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: #fafaf6;
+    border-radius: 6px;
+    border-left: 3px solid #D40E8C;
+  }
+  @media (max-width: 640px) {
+    .row { grid-template-columns: 1fr; gap: 4px; }
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+  .risk-item {
+    background: #fafaf6; border: 1px solid #e0ddd4; border-radius: 8px;
+    padding: 12px 14px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .risk-item .rag-swatches { display: flex; gap: 6px; flex-shrink: 0; }
+  .risk-item .swatch {
+    width: 26px; height: 26px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: transform 0.1s, border-color 0.15s;
+    position: relative;
+  }
+  .risk-item .swatch:hover { transform: scale(1.12); }
+  .risk-item .swatch.green { background: #2da55d; }
+  .risk-item .swatch.amber { background: #e8a440; }
+  .risk-item .swatch.red { background: #c54040; }
+  .risk-item .swatch.selected { border-color: #2c2725; }
+  .risk-item .swatch.selected:after {
+    content: "✓"; color: #fff; font-size: 13px; font-weight: bold;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  .risk-item input[type="text"] { flex: 1; }
+  .risk-item .risk-remove {
+    flex-shrink: 0; padding: 4px 10px; font-size: 12px;
+    color: #a32d2d; border: 1px solid #e8c4c4; border-radius: 4px;
+    background: #fff; cursor: pointer;
+  }
+  .risk-item .risk-remove:hover { background: #fceaea; }
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast">Copied!</div>
+
+<div class="container">
+
+  <h1>Executive Summary Email Generator <span style="font-size:12px; background:#D40E8C; color:#fff; padding:3px 10px; border-radius:12px; font-weight:600; vertical-align:middle; margin-left:8px;">INSIGHT</span></h1>
+  <div class="subtitle">Fill in the fields, hit <em>Generate</em>, then copy and paste into Outlook.</div>
+
+  <div class="section">
+    <div class="section-title">Project info</div>
+    <div class="row"><label>Project name</label><input id="f-project" type="text" value="Project Atlas" /></div>
+    <div class="row"><label>Reporting week</label><input id="f-week" type="text" placeholder="e.g. May 11, 2026" /></div>
+    <div class="row"><label>Prepared by</label><input id="f-author" type="text" placeholder="Your name" /></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Status indicators</div>
+    <div class="grid-3">
+      <div class="field">
+        <label>Overall health</label>
+        <select id="f-health">
+          <option value="green">● On track</option>
+          <option value="amber">● At risk</option>
+          <option value="red">● Off track</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Schedule</label>
+        <select id="f-schedule">
+          <option value="green">● On track</option>
+          <option value="amber">● At risk</option>
+          <option value="red">● Off track</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Work order</label>
+        <select id="f-budget">
+          <option value="green">● On track</option>
+          <option value="amber">● At risk</option>
+          <option value="red">● Off track</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Bottom line</div>
+    <textarea id="f-summary" placeholder="1–2 sentences on where the project stands, what changed, and any decisions needed."></textarea>
+  </div>
+
+  <div class="section">
+    <div class="section-title">By the numbers</div>
+    <div class="grid-3">
+      <div class="field"><label>Sprint items</label><input id="f-sprint" type="text" placeholder="0" /></div>
+      <div class="field"><label>Open bugs</label><input id="f-bugs" type="text" placeholder="0" /></div>
+      <div class="field"><label>Open risks</label><input id="f-risks" type="text" placeholder="0" /></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Wins since last governance meeting</div>
+    <textarea id="f-wins" placeholder="One per line"></textarea>
+    <div class="row" style="margin-top: 12px;">
+      <label>Sprint board URL</label>
+      <input id="f-sprintlink" type="text" placeholder="https://..." />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Risks (condensed)</div>
+    <div id="risks-list"></div>
+    <button id="btn-add-risk" type="button" class="ghost small" style="margin-top: 8px; padding: 8px 14px; font-size: 13px; background: transparent; border: 1px dashed #c0bcb1; border-radius: 6px; color: #554741; cursor: pointer;">+ Add risk</button>
+    <div class="row" style="margin-top: 12px;">
+      <label>Risk log URL</label>
+      <input id="f-risklog" type="text" placeholder="https://..." />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Open proposals (with client)</div>
+    <textarea id="f-proposals" placeholder="One per line, format:  Name | Status&#10;Example:&#10;Managed Support | proposal sent to FM pending review&#10;QA Function | proposal sent to FM pending review&#10;Helios / AI Prototyping | needs further discussion" style="min-height: 110px;"></textarea>
+    <div style="font-size: 11px; color: #888; margin-top: 6px;">Format: <code style="background:#f4f4f1;padding:1px 5px;border-radius:3px;">Name | Status</code> — one per line. Leave blank to hide this section.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Open items (client side)</div>
+    <textarea id="f-openitems" placeholder="One per line, format:  Name | Status" style="min-height: 110px;">Managed Support | proposal sent to FM pending review
+QA Function | proposal sent to FM pending review
+DPS Discovery | proposal sent to FM pending review
+Helios / AI Prototyping | needs further discussion</textarea>
+    <div style="font-size: 11px; color: #888; margin-top: 6px;">Format: <code style="background:#f4f4f1;padding:1px 5px;border-radius:3px;">Name | Status</code> — one per line. Leave blank to hide this section.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Roadmap image</div>
+    <div id="roadmap-dropzone" tabindex="0" style="border: 2px dashed #d4d2c9; border-radius: 6px; padding: 24px; text-align: center; cursor: pointer; background: #fafaf6; transition: border-color 0.15s, background 0.15s;">
+      <div id="roadmap-empty" style="color: #888; font-size: 13px;">
+        <div style="font-size: 24px; margin-bottom: 8px;">📋</div>
+        <div><strong style="color: #555;">Click here, then paste your roadmap</strong> (Ctrl+V)</div>
+        <div style="font-size: 11px; margin-top: 6px;">Take a screenshot first (Win+Shift+S on Windows), then click this box and paste.</div>
+      </div>
+      <div id="roadmap-preview" style="display: none;">
+        <img id="roadmap-img" style="max-width: 100%; max-height: 280px; border-radius: 4px; border: 1px solid #e0ddd4;" />
+        <div style="margin-top: 10px;">
+          <button id="btn-remove-roadmap" type="button" style="flex: 0; min-width: auto; padding: 6px 12px; font-size: 12px;">Remove image</button>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 12px;">
+      <label>Caption (optional)</label>
+      <input id="f-roadmap-caption" type="text" placeholder="e.g. Roadmap as of May 14" />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Decision log</div>
+    <div class="row">
+      <label>Decision log URL</label>
+      <input id="f-decisionlog" type="text" placeholder="https://..." />
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Next week</div>
+    <textarea id="f-next" placeholder="One per line"></textarea>
+  </div>
+
+  <div class="button-row">
+    <button id="btn-generate" class="primary">Generate email</button>
+    <button id="btn-copy" disabled>Copy to clipboard</button>
+    <button id="btn-download" disabled>Download .html</button>
+    <button id="btn-save" title="Save current values to your browser">Save inputs</button>
+    <button id="btn-load" title="Load previously saved values">Load saved</button>
+    <button id="btn-clear" title="Clear all fields">Clear</button>
+    <button id="btn-reset-demo" title="Restore demo data">Reset to demo</button>
+  </div>
+
+  <div id="output" class="output">
+    <div class="output-label">
+      <strong>Preview below.</strong> Click <em>Copy to clipboard</em>, then paste into a new Outlook email (Ctrl+V). Formatting will be preserved.
+    </div>
+    <div id="preview-frame" class="preview-frame" style="padding: 16px;"></div>
+  </div>
+
+  <div class="hint">
+    <strong>Tip:</strong> Use <em>Save inputs</em> after filling in values you reuse weekly (project name, your name, risk log URL). Next week, hit <em>Load saved</em> and only update the things that changed — dates, numbers, and bullets.
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const colors = {
+    green: { bg: '#e8f5ee', fg: '#0f6e56', label: '● On track' },
+    amber: { bg: '#fdf3e0', fg: '#854f0b', label: '● At risk' },
+    red:   { bg: '#fceaea', fg: '#a32d2d', label: '● Off track' }
+  };
+
+  const fieldIds = ['f-project','f-week','f-author','f-health','f-schedule','f-budget','f-summary','f-sprint','f-bugs','f-risks','f-wins','f-sprintlink','f-risklog','f-proposals','f-openitems','f-roadmap-caption','f-decisionlog','f-next'];
+
+  // ===== DEMO DATA =====
+  const DEMO_DATA = {
+    'f-project': 'Trillion Dollar Company',
+    'f-week': 'May 26, 2026',
+    'f-author': 'Alex Morgan',
+    'f-health': 'amber',
+    'f-schedule': 'amber',
+    'f-budget': 'green',
+    'f-summary': 'The redesigned checkout flow is now live for all users and the loyalty rewards integration is complete. Load testing of the rewards engine and final Legal sign-off on customer-facing terms remain before full launch.',
+    'f-sprint': '52',
+    'f-bugs': '6',
+    'f-risks': '3',
+    'f-wins': 'Checkout redesign rolled out to 100% of users — checkout time down 22%\nLoyalty rewards engine integrated across web and mobile\nMedian API response time cut from 340ms to 180ms via new caching layer',
+    'f-sprintlink': 'https://trilliondollarco.atlassian.net/jira/sprint/7',
+    _risks: [
+      { text: 'Loyalty engine not yet load-tested at peak volumes', rag: 'amber' },
+      { text: 'Payment provider API breaking changes due July 1', rag: 'amber' },
+      { text: 'Loyalty terms pending Legal sign-off (blocking public launch)', rag: 'red' }
+    ],
+    'f-risklog': 'https://trilliondollarco.atlassian.net/wiki/risks',
+    'f-proposals': 'Managed Support Package | proposal sent to client pending review\nQA Automation Retainer | proposal sent to client pending review\nData Platform Phase 2 | needs further discussion',
+    'f-openitems': 'Production access for rewards service | awaiting client IT\nBrand assets for loyalty UI | awaiting client marketing\nFinal sign-off on loyalty terms | with client Legal',
+    'f-roadmap-caption': 'Roadmap as of May 26, 2026',
+    'f-decisionlog': 'https://trilliondollarco.atlassian.net/wiki/decisions',
+    'f-next': 'Load test the loyalty rewards engine at peak volumes\nMigrate to v2 payment provider API ahead of July 1 deadline\nBegin Phase 1 of personalized homepage recommendations\nObtain Legal sign-off to enable public loyalty launch'
+  };
+
+  function applyDemoData() {
+    Object.keys(DEMO_DATA).forEach(function(key) {
+      if (key === '_risks') return;
+      var el = document.getElementById(key);
+      if (el) el.value = DEMO_DATA[key];
+    });
+    window._risksData = (DEMO_DATA._risks || []).map(function(r){ return { _uid: ruid(), text: r.text, rag: r.rag }; });
+    renderRisks();
+  }
+
+  // ===== Risk cards with RAG color picker =====
+  window._risksData = [];
+  function ruid() { return 'r_' + Math.random().toString(36).slice(2, 9); }
+
+  function renderRisks() {
+    var container = document.getElementById('risks-list');
+    if (!container) return;
+    if (window._risksData.length === 0) {
+      container.innerHTML = '<div style="font-size:12px;color:#888;font-style:italic;padding:6px 0;">No risks yet. Click below to add one.</div>';
+      return;
+    }
+    container.innerHTML = window._risksData.map(function(r) {
+      return '<div class="risk-item" data-uid="' + r._uid + '">' +
+        '<div class="rag-swatches">' +
+          '<div class="swatch green' + (r.rag === 'green' ? ' selected' : '') + '" data-rag="green" title="Low / on track"></div>' +
+          '<div class="swatch amber' + (r.rag === 'amber' ? ' selected' : '') + '" data-rag="amber" title="Medium / at risk"></div>' +
+          '<div class="swatch red' + (r.rag === 'red' ? ' selected' : '') + '" data-rag="red" title="High / critical"></div>' +
+        '</div>' +
+        '<input type="text" value="' + esc(r.text) + '" placeholder="Describe the risk briefly" data-field="text" />' +
+        '<button type="button" class="risk-remove" data-action="remove">Remove</button>' +
+      '</div>';
+    }).join('');
+    bindRiskEvents();
+  }
+
+  function bindRiskEvents() {
+    document.querySelectorAll('#risks-list .risk-item').forEach(function(card) {
+      var uid = card.getAttribute('data-uid');
+      var item = window._risksData.find(function(x){ return x._uid === uid; });
+      if (!item) return;
+      card.querySelector('[data-field="text"]').addEventListener('input', function(e) {
+        item.text = e.target.value;
+      });
+      card.querySelectorAll('.swatch').forEach(function(sw) {
+        sw.addEventListener('click', function() {
+          item.rag = sw.getAttribute('data-rag');
+          card.querySelectorAll('.swatch').forEach(function(s){ s.classList.remove('selected'); });
+          sw.classList.add('selected');
+        });
+      });
+      card.querySelector('[data-action="remove"]').addEventListener('click', function() {
+        window._risksData = window._risksData.filter(function(x){ return x._uid !== uid; });
+        renderRisks();
+      });
+    });
+  }
+
+  function addRisk() {
+    window._risksData.push({ _uid: ruid(), text: '', rag: 'amber' });
+    renderRisks();
+  }
+
+  const STORAGE_KEY = 'execSummaryGenerator_v1';
+
+  function $(id) { return document.getElementById(id); }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function bullets(text) {
+    return text.split('\n').map(l => l.trim()).filter(Boolean)
+      .map(l => '<li style="margin-bottom:4px;">' + esc(l) + '</li>').join('');
+  }
+
+  function riskItemsHtml(risks) {
+    if (!risks || risks.length === 0) return '<div style="font-size:13px;color:#888;font-style:italic;">No risks logged.</div>';
+    var dotColor = { green: '#2da55d', amber: '#e8a440', red: '#c54040' };
+    var rows = risks.filter(function(r){ return r.text && r.text.trim(); }).map(function(r) {
+      var color = dotColor[r.rag] || dotColor.amber;
+      return '<tr>' +
+        '<td style="vertical-align:top;padding:3px 8px 3px 0;width:14px;">' +
+          '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:10px;height:10px;background-color:' + color + ';border-radius:50%;font-size:1px;line-height:10px;">&nbsp;</td></tr></table>' +
+        '</td>' +
+        '<td style="vertical-align:top;font-size:13px;line-height:1.5;color:#222222;padding:2px 0;">' + esc(r.text) + '</td>' +
+      '</tr>';
+    }).join('');
+    return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;">' + rows + '</table>';
+  }
+
+  function proposalRows(text) {
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) return '';
+    return lines.map(line => {
+      const parts = line.split('|').map(p => p.trim());
+      const name = parts[0] || '';
+      const status = parts[1] || '';
+      return '<tr>' +
+        '<td style="padding:8px 12px 8px 0;font-size:13px;font-weight:bold;color:#B01C87;font-family:Calibri,Arial,sans-serif;vertical-align:top;width:40%;">' + esc(name) + '</td>' +
+        '<td style="padding:8px 0;font-size:13px;color:#222222;font-family:Calibri,Arial,sans-serif;vertical-align:top;">' + esc(status) + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function pill(state) {
+    const c = colors[state];
+    return '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="background-color:' + c.bg + ';color:' + c.fg + ';padding:4px 12px;border-radius:12px;font-size:13px;font-weight:bold;font-family:Calibri,Arial,sans-serif;">' + c.label + '</td></tr></table>';
+  }
+
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+  }
+
+  function getValues() {
+    return {
+      project: $('f-project').value || 'Project',
+      week: $('f-week').value || '',
+      author: $('f-author').value || '',
+      health: $('f-health').value,
+      schedule: $('f-schedule').value,
+      budget: $('f-budget').value,
+      summary: $('f-summary').value || '',
+      sprint: $('f-sprint').value || '0',
+      bugs: $('f-bugs').value || '0',
+      risks: $('f-risks').value || '0',
+      wins: $('f-wins').value || '',
+      sprintlink: $('f-sprintlink').value || '',
+      risks: window._risksData.slice(),
+      risklog: $('f-risklog').value || '',
+      proposals: $('f-proposals').value || '',
+      openitems: $('f-openitems').value || '',
+      roadmapImage: window._roadmapImageData || '',
+      roadmapCaption: $('f-roadmap-caption').value || '',
+      decisionlog: $('f-decisionlog').value || '',
+      next: $('f-next').value || ''
+    };
+  }
+
+  function buildHtml(v) {
+    const riskLinkHtml = v.risklog
+      ? '<div style="font-size:12px;padding-top:10px;"><a href="' + esc(v.risklog) + '" style="color:#D40E8C;text-decoration:underline;">View full risk log →</a></div>'
+      : '';
+
+    const sprintLinkHtml = v.sprintlink
+      ? '<div style="font-size:12px;padding-top:10px;"><a href="' + esc(v.sprintlink) + '" style="color:#D40E8C;text-decoration:underline;">View full sprint →</a></div>'
+      : '';
+
+    const proposalsRows = proposalRows(v.proposals);
+    const proposalsHtml = proposalsRows
+      ? '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+          '<div style="font-size:14px;font-weight:bold;padding-bottom:10px;color:#222222;">Open proposals with client</div>' +
+          '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' + proposalsRows + '</table>' +
+        '</td></tr>'
+      : '';
+
+    const openItemsRows = proposalRows(v.openitems);
+    const openItemsHtml = openItemsRows
+      ? '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+          '<div style="font-size:14px;font-weight:bold;padding-bottom:10px;color:#222222;">Open items (client side)</div>' +
+          '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' + openItemsRows + '</table>' +
+        '</td></tr>'
+      : '';
+
+    const decisionLogHtml = v.decisionlog
+      ? '<tr><td style="padding:16px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+          '<div style="font-size:13px;color:#222222;"><strong style="font-weight:bold;">Decision log:</strong> <a href="' + esc(v.decisionlog) + '" style="color:#D40E8C;text-decoration:underline;">View all decisions →</a></div>' +
+        '</td></tr>'
+      : '';
+
+    const roadmapHtml = v.roadmapImage
+      ? '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;text-align:center;">' +
+          '<div style="font-size:14px;font-weight:bold;padding-bottom:12px;color:#222222;text-align:left;">Current roadmap</div>' +
+          '<img src="' + v.roadmapImage + '" alt="Roadmap" style="max-width:100%;height:auto;border:1px solid #e0ddd4;border-radius:4px;display:block;margin:0 auto;" />' +
+          (v.roadmapCaption ? '<div style="font-size:12px;color:#666666;padding-top:8px;font-style:italic;">' + esc(v.roadmapCaption) + '</div>' : '') +
+        '</td></tr>'
+      : '';
+
+    return (
+'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f1;padding:20px 0;font-family:Calibri,Arial,sans-serif;">' +
+  '<tr><td align="center">' +
+  '<table role="presentation" width="640" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #e0ddd4;max-width:640px;">' +
+
+    '<tr><td style="background-color:#ffffff;padding:20px 28px 14px;">' +
+      '<div style="font-family:Calibri,Arial,sans-serif;font-size:24px;font-weight:bold;color:#554741;letter-spacing:-0.5px;">Insight<span style="color:#D40E8C;">.</span></div>' +
+    '</td></tr>' +
+    '<tr><td style="height:4px;background-color:#D40E8C;font-size:1px;line-height:4px;">&nbsp;</td></tr>' +
+    '<tr><td style="background-color:#ffffff;padding:20px 28px 16px;border-bottom:1px solid #e0ddd4;">' +
+      '<div style="color:#2c2725;font-size:20px;font-weight:bold;font-family:Calibri,Arial,sans-serif;">' + esc(v.project) + ' — Executive Summary</div>' +
+      '<div style="color:#666666;font-size:13px;font-family:Calibri,Arial,sans-serif;padding-top:4px;">Week of ' + esc(v.week) + '</div>' +
+    '</td></tr>' +
+
+    '<tr><td style="padding:16px 28px;border-bottom:1px solid #e0ddd4;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Overall health</div>' + pill(v.health) + '</td>' +
+        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Schedule</div>' + pill(v.schedule) + '</td>' +
+        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Work order</div>' + pill(v.budget) + '</td>' +
+      '</tr></table>' +
+    '</td></tr>' +
+
+    '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+      '<div style="font-size:14px;font-weight:bold;color:#222222;padding-bottom:8px;">Bottom line</div>' +
+      '<div style="font-size:14px;line-height:1.6;color:#222222;">' + esc(v.summary) + '</div>' +
+    '</td></tr>' +
+
+    '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+      '<div style="font-size:14px;font-weight:bold;padding-bottom:14px;color:#222222;">By the numbers</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+        '<td width="33%" style="padding-right:6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f5f0;"><tr><td style="padding:14px;font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;padding-bottom:4px;">Sprint items</div><div style="font-size:22px;font-weight:bold;color:#222222;">' + esc(v.sprint) + '</div></td></tr></table></td>' +
+        '<td width="33%" style="padding:0 6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f5f0;"><tr><td style="padding:14px;font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;padding-bottom:4px;">Open bugs</div><div style="font-size:22px;font-weight:bold;color:#222222;">' + esc(v.bugs) + '</div></td></tr></table></td>' +
+        '<td width="33%" style="padding-left:6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f5f0;"><tr><td style="padding:14px;font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;padding-bottom:4px;">Open risks</div><div style="font-size:22px;font-weight:bold;color:#222222;">' + esc(v.risks) + '</div></td></tr></table></td>' +
+      '</tr></table>' +
+    '</td></tr>' +
+
+    '<tr><td style="border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+        '<td width="50%" valign="top" style="padding:20px 14px 20px 28px;border-right:1px solid #e0ddd4;">' +
+          '<div style="font-size:14px;font-weight:bold;color:#0f6e56;padding-bottom:10px;">Wins since last governance meeting</div>' +
+          '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:#222222;">' + bullets(v.wins) + '</ul>' +
+          sprintLinkHtml +
+        '</td>' +
+        '<td width="50%" valign="top" style="padding:20px 28px 20px 14px;">' +
+          '<div style="font-size:14px;font-weight:bold;color:#993c1d;padding-bottom:10px;">Risks &amp; blockers</div>' +
+          riskItemsHtml(v.risks) +
+          riskLinkHtml +
+        '</td>' +
+      '</tr></table>' +
+    '</td></tr>' +
+
+    proposalsHtml +
+
+    openItemsHtml +
+
+    roadmapHtml +
+
+    decisionLogHtml +
+
+    '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
+      '<div style="font-size:14px;font-weight:bold;padding-bottom:10px;color:#222222;">Next week</div>' +
+      '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#222222;">' + bullets(v.next) + '</ul>' +
+    '</td></tr>' +
+
+    '<tr><td style="padding:14px 28px;background-color:#f6f5f0;font-size:12px;color:#666666;font-family:Calibri,Arial,sans-serif;">' +
+      (v.author ? 'Prepared by ' + esc(v.author) + ' &nbsp;·&nbsp; ' : '') + 'Full report available on request' +
+    '</td></tr>' +
+
+  '</table></td></tr></table>'
+    );
+  }
+
+  let generatedHtml = '';
+
+  function generate() {
+    const v = getValues();
+    generatedHtml = buildHtml(v);
+    $('preview-frame').innerHTML = generatedHtml;
+    $('output').classList.add('show');
+    $('btn-copy').disabled = false;
+    $('btn-download').disabled = false;
+    $('output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function copyToClipboard() {
+    if (!generatedHtml) return;
+    const htmlBlob = new Blob([generatedHtml], { type: 'text/html' });
+    const textContent = $('preview-frame').innerText;
+    const textBlob = new Blob([textContent], { type: 'text/plain' });
+
+    if (typeof ClipboardItem !== 'undefined' && navigator.clipboard && navigator.clipboard.write) {
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })])
+        .then(() => showToast('Copied! Paste into Outlook with Ctrl+V'))
+        .catch(() => {
+          navigator.clipboard.writeText(generatedHtml);
+          showToast('Copied as HTML source');
+        });
+    } else {
+      navigator.clipboard.writeText(generatedHtml)
+        .then(() => showToast('Copied as HTML source'))
+        .catch(() => showToast('Copy failed — use Download instead'));
+    }
+  }
+
+  function downloadFile() {
+    if (!generatedHtml) return;
+    const full = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Executive Summary</title></head><body style="margin:0;padding:0;">' + generatedHtml + '</body></html>';
+    const blob = new Blob([full], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'exec-summary.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded');
+  }
+
+  function saveInputs() {
+    try {
+      const data = {};
+      fieldIds.forEach(id => { data[id] = $(id).value; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      showToast('Saved to this browser');
+    } catch (e) {
+      showToast('Save failed');
+    }
+  }
+
+  function loadInputs() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) { showToast('Nothing saved yet'); return; }
+      const data = JSON.parse(raw);
+      fieldIds.forEach(id => { if (data[id] !== undefined) $(id).value = data[id]; });
+      showToast('Loaded saved values');
+    } catch (e) {
+      showToast('Load failed');
+    }
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all fields?')) return;
+    window._risksData = []; renderRisks();
+    fieldIds.forEach(id => {
+      const el = $(id);
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    });
+    clearRoadmapImage();
+    $('output').classList.remove('show');
+    $('btn-copy').disabled = true;
+    $('btn-download').disabled = true;
+    generatedHtml = '';
+  }
+
+  $('btn-generate').addEventListener('click', generate);
+  $('btn-copy').addEventListener('click', copyToClipboard);
+  $('btn-download').addEventListener('click', downloadFile);
+  $('btn-save').addEventListener('click', saveInputs);
+  $('btn-load').addEventListener('click', loadInputs);
+  $('btn-clear').addEventListener('click', clearAll);
+  var _ar = document.getElementById('btn-add-risk'); if (_ar) _ar.addEventListener('click', addRisk);
+  renderRisks();
+  var _rd = document.getElementById('btn-reset-demo'); if (_rd) _rd.addEventListener('click', function(){ if(confirm('Replace current values with demo data?')){ applyDemoData(); showToast('Demo data restored'); } });
+
+  // Roadmap image paste handler
+  window._roadmapImageData = '';
+  const dropzone = $('roadmap-dropzone');
+  const roadmapEmpty = $('roadmap-empty');
+  const roadmapPreview = $('roadmap-preview');
+  const roadmapImg = $('roadmap-img');
+
+  function setRoadmapImage(dataUrl) {
+    window._roadmapImageData = dataUrl;
+    roadmapImg.src = dataUrl;
+    roadmapEmpty.style.display = 'none';
+    roadmapPreview.style.display = 'block';
+    dropzone.style.background = '#fff';
+  }
+
+  function clearRoadmapImage() {
+    window._roadmapImageData = '';
+    roadmapImg.src = '';
+    roadmapEmpty.style.display = 'block';
+    roadmapPreview.style.display = 'none';
+    dropzone.style.background = '#fafaf6';
+  }
+
+  function handlePastedImage(items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type && item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (!file) continue;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          setRoadmapImage(e.target.result);
+          showToast('Roadmap image added');
+        };
+        reader.readAsDataURL(file);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  dropzone.addEventListener('click', function() {
+    dropzone.focus();
+    dropzone.style.borderColor = '#D40E8C';
+    setTimeout(function() { dropzone.style.borderColor = '#d4d2c9'; }, 600);
+  });
+
+  dropzone.addEventListener('paste', function(e) {
+    e.preventDefault();
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    if (!handlePastedImage(items)) {
+      showToast('No image in clipboard');
+    }
+  });
+
+  // Also catch paste anywhere on the page if dropzone is focused-ish (fallback)
+  document.addEventListener('paste', function(e) {
+    if (document.activeElement === dropzone || dropzone.contains(document.activeElement)) return;
+    // only intercept if user clicked the dropzone recently
+    if (window._roadmapDropzoneActive) {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      if (handlePastedImage(items)) {
+        e.preventDefault();
+      }
+    }
+  });
+
+  dropzone.addEventListener('focus', function() { window._roadmapDropzoneActive = true; });
+  dropzone.addEventListener('blur', function() {
+    setTimeout(function() { window._roadmapDropzoneActive = false; }, 200);
+  });
+
+  // Drag and drop support too
+  dropzone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    dropzone.style.borderColor = '#D40E8C';
+    dropzone.style.background = '#eef4f9';
+  });
+  dropzone.addEventListener('dragleave', function() {
+    dropzone.style.borderColor = '#d4d2c9';
+    dropzone.style.background = window._roadmapImageData ? '#fff' : '#fafaf6';
+  });
+  dropzone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    dropzone.style.borderColor = '#d4d2c9';
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && files[0].type.indexOf('image') !== -1) {
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        setRoadmapImage(ev.target.result);
+        showToast('Roadmap image added');
+      };
+      reader.readAsDataURL(files[0]);
+    } else {
+      dropzone.style.background = window._roadmapImageData ? '#fff' : '#fafaf6';
+      showToast('Not an image file');
+    }
+  });
+
+  $('btn-remove-roadmap').addEventListener('click', function(e) {
+    e.stopPropagation();
+    clearRoadmapImage();
+  });
+
+  // Auto-load saved data if present, else apply demo data
+  try {
+    if (localStorage.getItem(STORAGE_KEY)) loadInputs();
+    else applyDemoData();
+  } catch (e) { applyDemoData(); }
+})();
+</script>
+
+</body>
+</html>
