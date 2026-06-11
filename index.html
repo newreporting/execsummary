@@ -213,6 +213,7 @@
           <option value="amber">● At risk</option>
           <option value="red">● Off track</option>
         </select>
+        <input id="f-health-reason" type="text" placeholder="Reason (shown if not on track)" style="margin-top:6px; font-size:12px;" />
       </div>
       <div class="field">
         <label>Schedule</label>
@@ -221,6 +222,7 @@
           <option value="amber">● At risk</option>
           <option value="red">● Off track</option>
         </select>
+        <input id="f-schedule-reason" type="text" placeholder="Reason (shown if not on track)" style="margin-top:6px; font-size:12px;" />
       </div>
       <div class="field">
         <label>Work order</label>
@@ -229,6 +231,7 @@
           <option value="amber">● At risk</option>
           <option value="red">● Off track</option>
         </select>
+        <input id="f-budget-reason" type="text" placeholder="Reason (shown if not on track)" style="margin-top:6px; font-size:12px;" />
       </div>
     </div>
   </div>
@@ -240,10 +243,18 @@
 
   <div class="section">
     <div class="section-title">By the numbers</div>
+    <div class="grid-2" style="margin-bottom: 10px;">
+      <div class="field"><label>Stories delivered / planned</label><input id="f-stories" type="text" placeholder="e.g. 10/14" /></div>
+      <div class="field"><label>Velocity</label><input id="f-velocity" type="text" placeholder="e.g. 71%" /></div>
+    </div>
+    <div class="grid-2" style="margin-bottom: 10px;">
+      <div class="field"><label>Carryover to next sprint</label><input id="f-carryover" type="text" placeholder="0" /></div>
+      <div class="field"><label>Avg cycle time (days)</label><input id="f-cycle" type="text" placeholder="e.g. 3.2" /></div>
+    </div>
     <div class="grid-3">
-      <div class="field"><label>Sprint items</label><input id="f-sprint" type="text" placeholder="0" /></div>
       <div class="field"><label>Open bugs</label><input id="f-bugs" type="text" placeholder="0" /></div>
       <div class="field"><label>Open risks</label><input id="f-risks" type="text" placeholder="0" /></div>
+      <div class="field"><label>Releases this sprint</label><input id="f-releases" type="text" placeholder="0" /></div>
     </div>
   </div>
 
@@ -274,11 +285,8 @@
 
   <div class="section">
     <div class="section-title">Open items (client side)</div>
-    <textarea id="f-openitems" placeholder="One per line, format:  Name | Status" style="min-height: 110px;">Managed Support | proposal sent to FM pending review
-QA Function | proposal sent to FM pending review
-DPS Discovery | proposal sent to FM pending review
-Helios / AI Prototyping | needs further discussion</textarea>
-    <div style="font-size: 11px; color: #888; margin-top: 6px;">Format: <code style="background:#f4f4f1;padding:1px 5px;border-radius:3px;">Name | Status</code> — one per line. Leave blank to hide this section.</div>
+    <textarea id="f-openitems" placeholder="One per line, format:  Name | Status | Owner" style="min-height: 110px;"></textarea>
+    <div style="font-size: 11px; color: #888; margin-top: 6px;">Format: <code style="background:#f4f4f1;padding:1px 5px;border-radius:3px;">Name | Status | Owner</code> — one per line. Owner is optional. Leave the whole field blank to hide this section.</div>
   </div>
 
   <div class="section">
@@ -346,33 +354,39 @@ Helios / AI Prototyping | needs further discussion</textarea>
     red:   { bg: '#fceaea', fg: '#a32d2d', label: '● Off track' }
   };
 
-  const fieldIds = ['f-project','f-week','f-author','f-health','f-schedule','f-budget','f-summary','f-sprint','f-bugs','f-risks','f-wins','f-sprintlink','f-risklog','f-proposals','f-openitems','f-roadmap-caption','f-decisionlog','f-next'];
+  const fieldIds = ['f-project','f-week','f-author','f-health','f-health-reason','f-schedule','f-schedule-reason','f-budget','f-budget-reason','f-summary','f-stories','f-velocity','f-carryover','f-bugs','f-risks','f-cycle','f-releases','f-wins','f-sprintlink','f-risklog','f-proposals','f-openitems','f-roadmap-caption','f-decisionlog','f-next'];
 
   // ===== DEMO DATA =====
   const DEMO_DATA = {
-    'f-project': 'Trillion Dollar Company',
-    'f-week': 'May 26, 2026',
-    'f-author': 'Alex Morgan',
+    'f-project': 'iPaaS',
+    'f-week': 'May 12, 2026',
+    'f-author': '',
     'f-health': 'amber',
+    'f-health-reason': 'Two notifications dev-complete but not yet released to prod',
     'f-schedule': 'amber',
+    'f-schedule-reason': 'Awaiting FM requirements & APIs to unblock next integrations',
     'f-budget': 'green',
-    'f-summary': 'The redesigned checkout flow is now live for all users and the loyalty rewards integration is complete. Load testing of the rewards engine and final Legal sign-off on customer-facing terms remain before full launch.',
-    'f-sprint': '52',
-    'f-bugs': '6',
-    'f-risks': '3',
-    'f-wins': 'Checkout redesign rolled out to 100% of users — checkout time down 22%\nLoyalty rewards engine integrated across web and mobile\nMedian API response time cut from 340ms to 180ms via new caching layer',
-    'f-sprintlink': 'https://trilliondollarco.atlassian.net/jira/sprint/7',
+    'f-budget-reason': '',
+    'f-summary': 'Sprint 4 closed with strong progress on platform consolidation — state files, Key Vaults, GitHub runners, DNS, logging and management resources all migrated into the management subscription. Development of the two priority notifications is complete and queued for production release in Sprint 5. Missing requirements and APIs from FM remain the main blockers for upcoming integrations.',
+    'f-stories': '10/14',
+    'f-velocity': '71%',
+    'f-carryover': '4',
+    'f-bugs': '3',
+    'f-risks': '2',
+    'f-cycle': '3.2',
+    'f-releases': '0',
+    'f-wins': 'Management subscription consolidation completed (state files, Key Vaults, runners, DNS, logging, mgmt resources)\nCI process added to common adapter infrastructure repo; CD now follows latest-first / fix-forward\nFMID Generation Logic technical overview delivered and "Production but MDC Invalid" data-integrity issue resolved\nDevelopment complete for Post-Creation FM Sum to Vault Data Gap and MDC and Status Valid but Record Not Created notifications — queued for production release in Sprint 5',
+    'f-sprintlink': '',
     _risks: [
-      { text: 'Loyalty engine not yet load-tested at peak volumes', rag: 'amber' },
-      { text: 'Payment provider API breaking changes due July 1', rag: 'amber' },
-      { text: 'Loyalty terms pending Legal sign-off (blocking public launch)', rag: 'red' }
+      { text: 'Missing requirements for our next integrations', rag: 'amber', mitigation: 'Bret & Dawood are working with internal FM Teams to supply requirements and unblock development', owner: 'Bret & Dawood' },
+      { text: 'Missing APIs for our next integrations', rag: 'amber', mitigation: 'Bret & Dawood are engaging FM Teams to obtain the APIs needed to start building Adapters', owner: 'Bret & Dawood' }
     ],
-    'f-risklog': 'https://trilliondollarco.atlassian.net/wiki/risks',
-    'f-proposals': 'Managed Support Package | proposal sent to client pending review\nQA Automation Retainer | proposal sent to client pending review\nData Platform Phase 2 | needs further discussion',
-    'f-openitems': 'Production access for rewards service | awaiting client IT\nBrand assets for loyalty UI | awaiting client marketing\nFinal sign-off on loyalty terms | with client Legal',
-    'f-roadmap-caption': 'Roadmap as of May 26, 2026',
-    'f-decisionlog': 'https://trilliondollarco.atlassian.net/wiki/decisions',
-    'f-next': 'Load test the loyalty rewards engine at peak volumes\nMigrate to v2 payment provider API ahead of July 1 deadline\nBegin Phase 1 of personalized homepage recommendations\nObtain Legal sign-off to enable public loyalty launch'
+    'f-risklog': '',
+    'f-proposals': '',
+    'f-openitems': '',
+    'f-roadmap-caption': '',
+    'f-decisionlog': '',
+    'f-next': 'Release the two completed notifications to production\nProgress next-integration work pending requirements & APIs from FM Teams\nDeliver Consolidated iPaaS Platform Architecture Documentation for FM review\nContinue platform hardening: container runners, Terraform optimisation, "latest first, fix forward" CD'
   };
 
   function applyDemoData() {
@@ -381,7 +395,7 @@ Helios / AI Prototyping | needs further discussion</textarea>
       var el = document.getElementById(key);
       if (el) el.value = DEMO_DATA[key];
     });
-    window._risksData = (DEMO_DATA._risks || []).map(function(r){ return { _uid: ruid(), text: r.text, rag: r.rag }; });
+    window._risksData = (DEMO_DATA._risks || []).map(function(r){ return { _uid: ruid(), text: r.text, rag: r.rag, mitigation: r.mitigation || '', owner: r.owner || '' }; });
     renderRisks();
   }
 
@@ -397,14 +411,20 @@ Helios / AI Prototyping | needs further discussion</textarea>
       return;
     }
     container.innerHTML = window._risksData.map(function(r) {
-      return '<div class="risk-item" data-uid="' + r._uid + '">' +
-        '<div class="rag-swatches">' +
-          '<div class="swatch green' + (r.rag === 'green' ? ' selected' : '') + '" data-rag="green" title="Low / on track"></div>' +
-          '<div class="swatch amber' + (r.rag === 'amber' ? ' selected' : '') + '" data-rag="amber" title="Medium / at risk"></div>' +
-          '<div class="swatch red' + (r.rag === 'red' ? ' selected' : '') + '" data-rag="red" title="High / critical"></div>' +
+      return '<div class="risk-item" data-uid="' + r._uid + '" style="flex-direction: column; align-items: stretch;">' +
+        '<div style="display: flex; align-items: center; gap: 12px;">' +
+          '<div class="rag-swatches">' +
+            '<div class="swatch green' + (r.rag === 'green' ? ' selected' : '') + '" data-rag="green" title="Low / on track"></div>' +
+            '<div class="swatch amber' + (r.rag === 'amber' ? ' selected' : '') + '" data-rag="amber" title="Medium / at risk"></div>' +
+            '<div class="swatch red' + (r.rag === 'red' ? ' selected' : '') + '" data-rag="red" title="High / critical"></div>' +
+          '</div>' +
+          '<input type="text" value="' + esc(r.text) + '" placeholder="Describe the risk briefly" data-field="text" style="flex:1;" />' +
+          '<button type="button" class="risk-remove" data-action="remove">Remove</button>' +
         '</div>' +
-        '<input type="text" value="' + esc(r.text) + '" placeholder="Describe the risk briefly" data-field="text" />' +
-        '<button type="button" class="risk-remove" data-action="remove">Remove</button>' +
+        '<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-top: 8px; margin-left: 96px;">' +
+          '<input type="text" value="' + esc(r.mitigation || '') + '" placeholder="Mitigation / status update" data-field="mitigation" style="font-size:12px;" />' +
+          '<input type="text" value="' + esc(r.owner || '') + '" placeholder="Owner" data-field="owner" style="font-size:12px;" />' +
+        '</div>' +
       '</div>';
     }).join('');
     bindRiskEvents();
@@ -433,16 +453,32 @@ Helios / AI Prototyping | needs further discussion</textarea>
   }
 
   function addRisk() {
-    window._risksData.push({ _uid: ruid(), text: '', rag: 'amber' });
+    window._risksData.push({ _uid: ruid(), text: '', rag: 'amber', mitigation: '', owner: '' });
     renderRisks();
   }
 
-  const STORAGE_KEY = 'execSummaryGenerator_v1';
+  const STORAGE_KEY = 'execSummaryGenerator_insight_sprint4_v1';
 
   function $(id) { return document.getElementById(id); }
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function statBoxTd(value, label, caption, width, position) {
+    var paddingStyle = position === 'right' ? 'padding-right:5px;' :
+                       position === 'left' ? 'padding-left:5px;' :
+                       'padding:0 5px;';
+    return '<td width="' + width + '" style="' + paddingStyle + 'vertical-align:top;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border:1px solid #ece9df;">' +
+        '<tr><td style="height:3px;background-color:#D40E8C;font-size:1px;line-height:3px;">&nbsp;</td></tr>' +
+        '<tr><td style="padding:14px 14px 12px;font-family:Calibri,Arial,sans-serif;">' +
+          '<div style="font-size:10px;color:#554741;padding-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;">' + esc(label) + '</div>' +
+          '<div style="font-size:26px;font-weight:bold;color:#D40E8C;line-height:1.05;letter-spacing:-0.5px;">' + esc(value) + '</div>' +
+          '<div style="font-size:11px;color:#666;padding-top:8px;line-height:1.4;">' + esc(caption) + '</div>' +
+        '</td></tr>' +
+      '</table>' +
+    '</td>';
   }
 
   function bullets(text) {
@@ -455,26 +491,39 @@ Helios / AI Prototyping | needs further discussion</textarea>
     var dotColor = { green: '#2da55d', amber: '#e8a440', red: '#c54040' };
     var rows = risks.filter(function(r){ return r.text && r.text.trim(); }).map(function(r) {
       var color = dotColor[r.rag] || dotColor.amber;
+      var meta = [];
+      if (r.mitigation && r.mitigation.trim()) meta.push('<span style="color:#444;"><b>Mitigation:</b> ' + esc(r.mitigation) + '</span>');
+      if (r.owner && r.owner.trim()) meta.push('<span style="color:#444;"><b>Owner:</b> ' + esc(r.owner) + '</span>');
+      var metaHtml = meta.length ? '<div style="font-size:12px;line-height:1.5;color:#555;padding:3px 0 8px 0;font-family:Calibri,Arial,sans-serif;">' + meta.join(' &nbsp;·&nbsp; ') + '</div>' : '';
       return '<tr>' +
-        '<td style="vertical-align:top;padding:3px 8px 3px 0;width:14px;">' +
+        '<td style="vertical-align:top;padding:5px 8px 0 0;width:14px;">' +
           '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="width:10px;height:10px;background-color:' + color + ';border-radius:50%;font-size:1px;line-height:10px;">&nbsp;</td></tr></table>' +
         '</td>' +
-        '<td style="vertical-align:top;font-size:13px;line-height:1.5;color:#222222;padding:2px 0;">' + esc(r.text) + '</td>' +
+        '<td style="vertical-align:top;font-size:13px;line-height:1.5;color:#222222;padding:3px 0 0 0;">' +
+          '<div style="font-weight:600;">' + esc(r.text) + '</div>' +
+          metaHtml +
+        '</td>' +
       '</tr>';
     }).join('');
     return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;">' + rows + '</table>';
   }
 
-  function proposalRows(text) {
+  function proposalRows(text, withOwner) {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
     if (lines.length === 0) return '';
     return lines.map(line => {
       const parts = line.split('|').map(p => p.trim());
       const name = parts[0] || '';
       const status = parts[1] || '';
+      const owner = parts[2] || '';
+      var ownerCell = withOwner
+        ? '<td style="padding:8px 0 8px 12px;font-size:13px;color:#555;font-family:Calibri,Arial,sans-serif;vertical-align:top;width:22%;font-style:italic;">' + esc(owner) + '</td>'
+        : '';
+      var nameWidth = withOwner ? '36%' : '40%';
       return '<tr>' +
-        '<td style="padding:8px 12px 8px 0;font-size:13px;font-weight:bold;color:#B01C87;font-family:Calibri,Arial,sans-serif;vertical-align:top;width:40%;">' + esc(name) + '</td>' +
+        '<td style="padding:8px 12px 8px 0;font-size:13px;font-weight:bold;color:#B01C87;font-family:Calibri,Arial,sans-serif;vertical-align:top;width:' + nameWidth + ';">' + esc(name) + '</td>' +
         '<td style="padding:8px 0;font-size:13px;color:#222222;font-family:Calibri,Arial,sans-serif;vertical-align:top;">' + esc(status) + '</td>' +
+        ownerCell +
         '</tr>';
     }).join('');
   }
@@ -497,12 +546,19 @@ Helios / AI Prototyping | needs further discussion</textarea>
       week: $('f-week').value || '',
       author: $('f-author').value || '',
       health: $('f-health').value,
+      healthReason: $('f-health-reason').value || '',
       schedule: $('f-schedule').value,
+      scheduleReason: $('f-schedule-reason').value || '',
       budget: $('f-budget').value,
+      budgetReason: $('f-budget-reason').value || '',
       summary: $('f-summary').value || '',
-      sprint: $('f-sprint').value || '0',
+      stories: $('f-stories').value || '0/0',
+      velocity: $('f-velocity').value || '–',
+      carryover: $('f-carryover').value || '0',
       bugs: $('f-bugs').value || '0',
       risks: $('f-risks').value || '0',
+      cycle: $('f-cycle').value || '–',
+      releases: $('f-releases').value || '0',
       wins: $('f-wins').value || '',
       sprintlink: $('f-sprintlink').value || '',
       riskList: window._risksData.slice(),
@@ -533,7 +589,7 @@ Helios / AI Prototyping | needs further discussion</textarea>
         '</td></tr>'
       : '';
 
-    const openItemsRows = proposalRows(v.openitems);
+    const openItemsRows = proposalRows(v.openitems, true);
     const openItemsHtml = openItemsRows
       ? '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
           '<div style="font-size:14px;font-weight:bold;padding-bottom:10px;color:#222222;">Open items (client side)</div>' +
@@ -564,46 +620,76 @@ Helios / AI Prototyping | needs further discussion</textarea>
       '<div style="font-family:Calibri,Arial,sans-serif;font-size:24px;font-weight:bold;color:#554741;letter-spacing:-0.5px;">Insight<span style="color:#D40E8C;">.</span></div>' +
     '</td></tr>' +
     '<tr><td style="height:4px;background-color:#D40E8C;font-size:1px;line-height:4px;">&nbsp;</td></tr>' +
-    '<tr><td style="background-color:#ffffff;padding:20px 28px 16px;border-bottom:1px solid #e0ddd4;">' +
-      '<div style="color:#2c2725;font-size:20px;font-weight:bold;font-family:Calibri,Arial,sans-serif;">' + esc(v.project) + ' — Executive Summary</div>' +
-      '<div style="color:#666666;font-size:13px;font-family:Calibri,Arial,sans-serif;padding-top:4px;">Week of ' + esc(v.week) + '</div>' +
+    '<tr><td style="background-color:#fbfaf6;padding:22px 28px 20px;border-bottom:1px solid #e0ddd4;">' +
+      '<div style="color:#554741;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;font-family:Calibri,Arial,sans-serif;padding-bottom:6px;">Executive Summary</div>' +
+      '<div style="color:#2c2725;font-size:24px;font-weight:bold;font-family:Calibri,Arial,sans-serif;line-height:1.1;letter-spacing:-0.5px;">' + esc(v.project) + '</div>' +
+      '<div style="color:#666666;font-size:13px;font-family:Calibri,Arial,sans-serif;padding-top:6px;">Week of ' + esc(v.week) + '</div>' +
     '</td></tr>' +
 
     '<tr><td style="padding:16px 28px;border-bottom:1px solid #e0ddd4;">' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
-        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Overall health</div>' + pill(v.health) + '</td>' +
-        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Schedule</div>' + pill(v.schedule) + '</td>' +
-        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Work order</div>' + pill(v.budget) + '</td>' +
+        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;vertical-align:top;">' +
+          '<div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Overall health</div>' + pill(v.health) +
+          ((v.health !== 'green' && v.healthReason) ? '<div style="font-size:12px;color:#666666;padding-top:6px;font-style:italic;line-height:1.4;font-family:Calibri,Arial,sans-serif;">' + esc(v.healthReason) + '</div>' : '') +
+        '</td>' +
+        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;vertical-align:top;">' +
+          '<div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Schedule</div>' + pill(v.schedule) +
+          ((v.schedule !== 'green' && v.scheduleReason) ? '<div style="font-size:12px;color:#666666;padding-top:6px;font-style:italic;line-height:1.4;font-family:Calibri,Arial,sans-serif;">' + esc(v.scheduleReason) + '</div>' : '') +
+        '</td>' +
+        '<td width="33%" style="font-family:Calibri,Arial,sans-serif;vertical-align:top;">' +
+          '<div style="font-size:11px;color:#666666;text-transform:uppercase;letter-spacing:0.5px;padding-bottom:6px;">Work order</div>' + pill(v.budget) +
+          ((v.budget !== 'green' && v.budgetReason) ? '<div style="font-size:12px;color:#666666;padding-top:6px;font-style:italic;line-height:1.4;font-family:Calibri,Arial,sans-serif;">' + esc(v.budgetReason) + '</div>' : '') +
+        '</td>' +
       '</tr></table>' +
     '</td></tr>' +
 
     '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
-      '<div style="font-size:14px;font-weight:bold;color:#222222;padding-bottom:8px;">Bottom line</div>' +
-      '<div style="font-size:14px;line-height:1.6;color:#222222;">' + esc(v.summary) + '</div>' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;"><tr>' +
+        '<td style="width:6px;background-color:#D40E8C;font-size:1px;line-height:1px;border-radius:3px;">&nbsp;</td>' +
+        '<td style="padding-left:12px;font-size:16px;font-weight:bold;color:#554741;font-family:Calibri,Arial,sans-serif;letter-spacing:-0.2px;">Bottom line</td>' +
+      '</tr></table>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#fafaf2;border-left:4px solid #D40E8C;"><tr><td style="padding:14px 18px;font-family:Calibri,Arial,sans-serif;">' +
+        '<div style="font-size:14px;line-height:1.7;color:#2c2725;">' + esc(v.summary) + '</div>' +
+      '</td></tr></table>' +
     '</td></tr>' +
 
     '<tr><td style="padding:20px 28px;border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
-      '<div style="font-size:14px;font-weight:bold;padding-bottom:14px;color:#222222;">By the numbers</div>' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;"><tr>' +
+        '<td style="width:6px;background-color:#D40E8C;font-size:1px;line-height:1px;border-radius:3px;">&nbsp;</td>' +
+        '<td style="padding-left:12px;font-size:16px;font-weight:bold;color:#554741;font-family:Calibri,Arial,sans-serif;letter-spacing:-0.2px;">By the numbers</td>' +
+      '</tr></table>' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
-        '<td width="33%" style="padding-right:6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f5f0;"><tr><td style="padding:14px;font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;padding-bottom:4px;">Sprint items</div><div style="font-size:22px;font-weight:bold;color:#222222;">' + esc(v.sprint) + '</div></td></tr></table></td>' +
-        '<td width="33%" style="padding:0 6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f5f0;"><tr><td style="padding:14px;font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;padding-bottom:4px;">Open bugs</div><div style="font-size:22px;font-weight:bold;color:#222222;">' + esc(v.bugs) + '</div></td></tr></table></td>' +
-        '<td width="33%" style="padding-left:6px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f6f5f0;"><tr><td style="padding:14px;font-family:Calibri,Arial,sans-serif;"><div style="font-size:11px;color:#666666;padding-bottom:4px;">Open risks</div><div style="font-size:22px;font-weight:bold;color:#222222;">' + esc(v.risks) + '</div></td></tr></table></td>' +
+        statBoxTd(v.stories, 'Stories delivered', 'How much committed work actually shipped this sprint.', '25%', 'right') +
+        statBoxTd(v.velocity, 'Velocity', 'Higher = more predictable delivery; trend matters more than the number.', '25%', 'middle') +
+        statBoxTd(v.carryover, 'Carryover', 'Work moving into next sprint. Lower is better — too much erodes future capacity.', '25%', 'middle') +
+        statBoxTd(v.bugs, 'Open bugs', 'Unresolved defects. Lower = healthier platform and fewer surprises.', '25%', 'left') +
+      '</tr></table>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;"><tr>' +
+        statBoxTd(v.risks, 'Open risks', 'Items that could disrupt delivery. We surface and own each one.', '33%', 'right') +
+        statBoxTd(v.cycle, 'Avg cycle time', 'How fast a story moves through the team. Lower = more responsive.', '33%', 'middle') +
+        statBoxTd(v.releases, 'Releases', 'Times we shipped to production. More releases = faster feedback loops.', '33%', 'left') +
       '</tr></table>' +
     '</td></tr>' +
 
-    '<tr><td style="border-bottom:1px solid #e0ddd4;font-family:Calibri,Arial,sans-serif;">' +
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
-        '<td width="50%" valign="top" style="padding:20px 14px 20px 28px;border-right:1px solid #e0ddd4;">' +
-          '<div style="font-size:14px;font-weight:bold;color:#0f6e56;padding-bottom:10px;">Wins since last governance meeting</div>' +
-          '<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:#222222;">' + bullets(v.wins) + '</ul>' +
-          sprintLinkHtml +
-        '</td>' +
-        '<td width="50%" valign="top" style="padding:20px 28px 20px 14px;">' +
-          '<div style="font-size:14px;font-weight:bold;color:#993c1d;padding-bottom:10px;">Risks &amp; blockers</div>' +
-          riskItemsHtml(v.riskList) +
-          riskLinkHtml +
-        '</td>' +
+    '<tr><td style="padding:24px 28px 8px;font-family:Calibri,Arial,sans-serif;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' +
+        '<td style="width:6px;background-color:#0f6e56;font-size:1px;line-height:1px;border-radius:3px;">&nbsp;</td>' +
+        '<td style="padding-left:12px;font-size:16px;font-weight:bold;color:#0f6e56;font-family:Calibri,Arial,sans-serif;letter-spacing:-0.2px;">Wins since last governance meeting</td>' +
       '</tr></table>' +
+    '</td></tr>' +
+    '<tr><td style="padding:4px 28px 20px;font-family:Calibri,Arial,sans-serif;border-bottom:1px solid #e0ddd4;">' +
+      '<ul style="margin:0;padding-left:22px;font-size:13px;line-height:1.7;color:#222222;">' + bullets(v.wins) + '</ul>' +
+      sprintLinkHtml +
+    '</td></tr>' +
+    '<tr><td style="padding:24px 28px 8px;font-family:Calibri,Arial,sans-serif;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' +
+        '<td style="width:6px;background-color:#D40E8C;font-size:1px;line-height:1px;border-radius:3px;">&nbsp;</td>' +
+        '<td style="padding-left:12px;font-size:16px;font-weight:bold;color:#993c1d;font-family:Calibri,Arial,sans-serif;letter-spacing:-0.2px;">Risks &amp; blockers</td>' +
+      '</tr></table>' +
+    '</td></tr>' +
+    '<tr><td style="padding:4px 28px 20px;font-family:Calibri,Arial,sans-serif;border-bottom:1px solid #e0ddd4;">' +
+      riskItemsHtml(v.riskList) +
+      riskLinkHtml +
     '</td></tr>' +
 
     proposalsHtml +
